@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111624">
+  <title>Hotel Plans — A Night Away</title>
+  <meta name="description" content="Pick a place, choose a hotel, and plan a night away together.">
+  <style>
+    :root { color-scheme: dark; --ink:#f8f4ef; --muted:#b8b7c5; --gold:#f0ca91; --line:rgba(233,227,228,.16); --surface:#1b2030; }
+    * { box-sizing:border-box; }
+    html { min-width:320px; }
+    body {
+      min-width:320px; min-height:100vh; min-height:100svh; margin:0;
+      padding:clamp(16px,4vw,40px); display:grid; place-items:center;
+      color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at 12% 8%,rgba(74,102,148,.32),transparent 32rem),
+                 radial-gradient(circle at 88% 90%,rgba(168,107,110,.2),transparent 34rem),#111624;
+    }
+    button { font:inherit; cursor:pointer; }
+    button:focus-visible,a:focus-visible { outline:3px solid var(--gold); outline-offset:4px; }
+    [hidden] { display:none !important; }
+    .shell { width:min(100%,740px); }
+    .masthead,.footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 4px; color:#adafc0; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    .masthead { margin-bottom:18px; }
+    .seal,.footer span:last-child { color:var(--gold); }
+    .card { position:relative; overflow:hidden; padding:clamp(28px,7vw,58px); border:1px solid var(--line); border-radius:28px; background:linear-gradient(150deg,rgba(47,56,75,.96),var(--surface) 55%,#171924); box-shadow:0 28px 90px rgba(0,0,0,.35); }
+    .card::before { content:""; position:absolute; pointer-events:none; top:-190px; right:-220px; width:420px; height:420px; border-radius:50%; background:radial-gradient(circle,rgba(240,202,145,.13),transparent 68%); }
+    .eyebrow { display:inline-flex; align-items:center; gap:9px; margin:0 0 18px; color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; }
+    .eyebrow::before { content:""; width:20px; height:1px; background:currentColor; }
+    h1,h2 { font-family:Georgia,"Times New Roman",serif; font-weight:500; letter-spacing:-.045em; }
+    h1 { margin:0; font-size:clamp(43px,8.5vw,76px); line-height:1.03; }
+    h2 { margin:0 0 16px; font-size:clamp(42px,8vw,68px); line-height:1.04; }
+    .accent { color:var(--gold); font-style:italic; }
+    .lead { max-width:540px; margin:21px 0 0; color:var(--muted); font-size:clamp(16px,2.6vw,19px); line-height:1.6; }
+    .choices { display:grid; gap:12px; margin:29px 0 0; }
+    .choice { display:flex; width:100%; align-items:center; gap:15px; min-width:0; padding:17px; border:1px solid var(--line); border-radius:17px; background:rgba(255,255,255,.035); color:var(--ink); text-align:left; transition:background .18s,border-color .18s; }
+    .choice:hover { border-color:rgba(240,202,145,.6); }
+    .choice[aria-pressed="true"] { border-color:var(--gold); background:rgba(240,202,145,.11); }
+    .choice[aria-pressed="true"]::after { content:""; flex:none; width:8px; height:14px; margin:0 6px 0 auto; border-right:2px solid var(--gold); border-bottom:2px solid var(--gold); transform:rotate(45deg); }
+    .choice-copy { min-width:0; }
+    .choice strong { display:block; font-family:Georgia,serif; font-size:21px; font-weight:500; overflow-wrap:anywhere; }
+    .choice small { display:block; margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4; }
+    .emoji { flex:none; font-size:30px; line-height:1; }
+    .hotel-option { min-width:0; }
+    .hotel-link { display:inline-block; margin:7px 3px 0; color:var(--gold); font-size:12px; }
+    .hotel-link:hover { color:#ffe0ad; }
+    .step-actions { margin-top:26px; }
+    .back { margin:0 0 22px; padding:0; border:0; background:none; color:var(--gold); font-size:13px; font-weight:700; }
+    .back:hover { text-decoration:underline; }
+    .hint { margin:18px 0 0; color:#a6a8b8; font-size:12px; line-height:1.5; }
+    .buttons { display:flex; flex-wrap:wrap; gap:11px; }
+    .buttons.dodging { padding-bottom:155px; }
+    .btn { min-height:52px; padding:12px 19px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.055); color:var(--ink); font-weight:750; transition:translate .22s,background .18s,border-color .18s; }
+    .btn:hover { border-color:rgba(240,202,145,.6); background:rgba(255,255,255,.09); }
+    .btn-primary { border-color:var(--gold); background:var(--gold); color:#20202b; }
+    .btn-primary:hover { border-color:#ffe0ad; background:#ffe0ad; }
+    .btn:disabled { opacity:.48; cursor:not-allowed; }
+    .status { min-height:34px; margin:17px 0 0; color:var(--gold); font-size:14px; line-height:1.5; }
+    .rule { height:1px; margin:29px 0 23px; background:var(--line); }
+    .outcome { display:none; }
+    .outcome.is-visible { display:block; }
+    .icon-big { display:block; margin:3px 0 20px; font-size:60px; line-height:1; }
+    .response { max-width:520px; margin:0 0 23px; color:var(--muted); font-size:18px; line-height:1.55; }
+    .notice { margin:17px 0 0; color:#a6a8b8; font-size:12px; line-height:1.5; }
+    .footer { margin-top:18px; font-size:10px; font-weight:600; letter-spacing:.07em; text-transform:none; }
+    .confetti { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .confetti i { position:absolute; top:-24px; width:8px; height:15px; border-radius:2px; opacity:0; animation:fall 2.7s ease-in forwards; }
+    @keyframes fall { 0%{transform:translateY(-15px) rotate(0);opacity:0} 12%{opacity:1} 100%{transform:translateY(720px) rotate(630deg);opacity:0} }
+    @media(max-width:540px) { .card{border-radius:22px} .choice{padding:13px 14px} .choice strong{font-size:19px} .buttons{display:grid;grid-template-columns:1fr} .buttons.dodging{padding-bottom:170px} .btn{width:100%} .masthead{font-size:10px;letter-spacing:.07em} .footer{align-items:flex-start} }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important} }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="masthead"><span>Hotel Plans</span><span class="seal">✦ A little getaway proposal ✦</span></div>
+    <main class="card" id="card">
+      <div id="planner">
+        <section id="areaStep" aria-labelledby="areaTitle">
+          <p class="eyebrow">A night away sounds good</p>
+          <h1 id="areaTitle" tabindex="-1">How Far Should <span class="accent">We Go?</span></h1>
+          <p class="lead">First pick the neighborhood. Then we’ll find a hotel worth packing a bag for.</p>
+          <div class="choices" role="group" aria-label="Choose a location">
+            <button class="choice area-choice" type="button" data-area="harker" aria-pressed="false"><span class="emoji" aria-hidden="true">📍</span><span class="choice-copy"><strong>Harker Heights</strong><small>Stay close and keep the getaway easy.</small></span></button>
+            <button class="choice area-choice" type="button" data-area="sanantonio" aria-pressed="false"><span class="emoji" aria-hidden="true">🌆</span><span class="choice-copy"><strong>North San Antonio</strong><small>A little drive, a bigger change of scenery.</small></span></button>
+          </div>
+          <div class="step-actions"><button class="btn btn-primary" id="areaContinue" type="button" disabled>See the hotels →</button></div>
+        </section>
+        <section id="hotelStep" aria-labelledby="hotelTitle" hidden>
+          <button class="back" id="areaBack" type="button">← Change location</button>
+          <p class="eyebrow">The shortlist</p>
+          <h2 id="hotelTitle" tabindex="-1">Pick Our <span class="accent">Hotel.</span></h2>
+          <p class="lead">A few real places in <span id="areaName"></span>. Choose the one that feels right.</p>
+          <div class="choices" id="hotelChoices" role="group" aria-label="Choose a hotel"></div>
+          <div class="step-actions"><button class="btn btn-primary" id="hotelContinue" type="button" disabled>Choose the extras →</button></div>
+        </section>
+        <section id="amenityStep" aria-labelledby="amenityTitle" hidden>
+          <button class="back" id="hotelBack" type="button">← Change hotel</button>
+          <p class="eyebrow">The finishing touches</p>
+          <h2 id="amenityTitle" tabindex="-1">What Makes It <span class="accent">Worth It?</span></h2>
+          <p class="lead">At <span id="chosenHotel"></span>, pick the extras we should look forward to.</p>
+          <div class="choices" id="amenityChoices" role="group" aria-label="Choose hotel amenities"></div>
+          <p class="hint">Hotel amenities, hours, and availability can change. Check the hotel's page before booking.</p>
+          <div class="rule"></div>
+          <div class="buttons" id="decisionButtons">
+            <button class="btn btn-primary" id="yesBtn" type="button" disabled>Sounds like a plan</button>
+            <button class="btn" id="noBtn" type="button">No, thanks</button>
+          </div>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+      <section class="outcome" id="yesOutcome" aria-labelledby="yesTitle">
+        <p class="eyebrow">The plan is coming together</p>
+        <span class="icon-big" aria-hidden="true">✨</span>
+        <h2 id="yesTitle" tabindex="-1">A Night Away <span class="accent">It Is.</span></h2>
+        <p class="response" id="yesSummary"></p>
+        <div class="buttons"><button class="btn btn-primary" id="copyYes" type="button">Copy our plan</button><button class="btn" data-restart type="button">Start over</button></div>
+        <p class="notice" id="yesNotice" role="status" aria-live="polite">Your plan stays here until you share it.</p>
+      </section>
+      <section class="outcome" id="noOutcome" aria-labelledby="noTitle">
+        <p class="eyebrow">Decision respectfully received</p>
+        <span class="icon-big" aria-hidden="true">🛎️</span>
+        <h2 id="noTitle" tabindex="-1">Fair <span class="accent">Enough.</span></h2>
+        <p class="response">The hotel pillows understand. Maybe another time.</p>
+        <div class="buttons"><button class="btn btn-primary" id="copyNo" type="button">Copy my reply</button><button class="btn" data-restart type="button">Start over</button></div>
+        <p class="notice" id="noNotice" role="status" aria-live="polite">Your answer stays here until you share it.</p>
+      </section>
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+    </main>
+    <div class="footer"><span>One location. One hotel. A few very good reasons.</span><span>Dates are negotiable.</span></div>
+  </div>
+  <script>
+    const hotels = {
+      harker: [
+        { name:'Hampton Inn Harker Heights', detail:'Harker Heights · pool and breakfast', icon:'☀️', url:'https://www.hilton.com/en/hotels/ilehxhx-hampton-harker-heights/', amenities:[['Free hot breakfast','☕'],['Outdoor pool','🏊'],['Fitness center','💪'],['Free parking','🚗'],['Pet-friendly room','🐾']] },
+        { name:'Best Western Harker Heights', detail:'Harker Heights · an easy local stay', icon:'🛏️', url:'https://www.bestwestern.com/en-us/book/hotel/harker-heights/best-western-harker-heights/44726', amenities:[['Breakfast','☕'],['Outdoor pool','🏊'],['Fitness center','💪'],['Free parking','🚗']] }
+      ],
+      sanantonio: [
+        { name:'La Cantera Resort & Spa', detail:'North San Antonio · spa and resort pools', icon:'🌿', url:'https://www.lacanteraresort.com/', amenities:[['Adults-only pool','🏊'],['Spa','🧖'],['On-site dining','🍽️'],['Golf','⛳']] },
+        { name:'JW Marriott San Antonio Hill Country Resort & Spa', detail:'North San Antonio · a full resort escape', icon:'🌊', url:'https://www.marriott.com/en-us/hotels/satjw-jw-marriott-san-antonio-hill-country-resort-and-spa/overview/', amenities:[['Adults-only pool','🏊'],['Lazy river','🌊'],['Spa','🧖'],['On-site dining','🍽️'],['Golf','⛳'],['Room service','🛎️']] },
+        { name:'The Westin San Antonio North', detail:'North San Antonio · pools and dinner on site', icon:'🌙', url:'https://www.marriott.com/en-us/hotels/satwn-the-westin-san-antonio-north/overview/', amenities:[['Indoor pool','🏊'],['Outdoor pool','☀️'],['Dry sauna','🧖'],['On-site dining','🍽️'],['Fitness center','💪']] }
+      ]
+    };
+    const labels = { harker:'Harker Heights', sanantonio:'North San Antonio' };
+    const $ = id => document.getElementById(id);
+    const areaButtons = [...document.querySelectorAll('[data-area]')];
+    let area = '', hotel = null, selectedAmenities = new Set(), noAttempts = 0;
+
+    function showStep(id, titleId) {
+      for (const step of ['areaStep','hotelStep','amenityStep']) $(step).hidden = step !== id;
+      $(titleId).focus();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    areaButtons.forEach(button => button.addEventListener('click', () => {
+      area = button.dataset.area;
+      areaButtons.forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
+      $('areaContinue').disabled = false;
+    }));
+    $('areaContinue').addEventListener('click', () => {
+      if (!area) return;
+      $('areaName').textContent = labels[area];
+      hotel = null;
+      $('hotelContinue').disabled = true;
+      $('hotelChoices').replaceChildren();
+      hotels[area].forEach(candidate => {
+        const option = document.createElement('div'); option.className = 'hotel-option';
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'choice'; button.setAttribute('aria-pressed','false');
+        const emoji = document.createElement('span'); emoji.className = 'emoji'; emoji.setAttribute('aria-hidden','true'); emoji.textContent = candidate.icon;
+        const copy = document.createElement('span'); copy.className = 'choice-copy';
+        const name = document.createElement('strong'); name.textContent = candidate.name;
+        const detail = document.createElement('small'); detail.textContent = candidate.detail;
+        copy.append(name,detail); button.append(emoji,copy);
+        button.addEventListener('click', () => {
+          hotel = candidate;
+          $('hotelChoices').querySelectorAll('button.choice').forEach(choice => choice.setAttribute('aria-pressed',String(choice === button)));
+          $('hotelContinue').disabled = false;
+        });
+        const link = document.createElement('a'); link.className = 'hotel-link'; link.href = candidate.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'View official hotel page ↗';
+        option.append(button,link); $('hotelChoices').append(option);
+      });
+      showStep('hotelStep','hotelTitle');
+    });
+    $('areaBack').addEventListener('click', () => showStep('areaStep','areaTitle'));
+    $('hotelContinue').addEventListener('click', () => {
+      if (!hotel) return;
+      $('chosenHotel').textContent = hotel.name;
+      selectedAmenities = new Set(); $('yesBtn').disabled = true;
+      $('amenityChoices').replaceChildren();
+      hotel.amenities.forEach(([name,emoji]) => {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'choice'; button.setAttribute('aria-pressed','false');
+        const icon = document.createElement('span'); icon.className = 'emoji'; icon.setAttribute('aria-hidden','true'); icon.textContent = emoji;
+        const copy = document.createElement('span'); copy.className = 'choice-copy';
+        const strong = document.createElement('strong'); strong.textContent = name; copy.append(strong); button.append(icon,copy);
+        button.addEventListener('click', () => {
+          if (selectedAmenities.has(name)) selectedAmenities.delete(name); else selectedAmenities.add(name);
+          button.setAttribute('aria-pressed',String(selectedAmenities.has(name)));
+          $('yesBtn').disabled = selectedAmenities.size === 0;
+        });
+        $('amenityChoices').append(button);
+      });
+      resetNo(); showStep('amenityStep','amenityTitle');
+    });
+    $('hotelBack').addEventListener('click', () => { resetNo(); showStep('hotelStep','hotelTitle'); });
+
+    function resetNo() {
+      noAttempts = 0; $('noBtn').textContent = 'No, thanks'; $('noBtn').style.translate = '';
+      $('decisionButtons').classList.remove('dodging'); $('status').textContent = '';
+    }
+    function moveNo() {
+      const button = $('noBtn'), card = $('card');
+      const rect = button.getBoundingClientRect(), bounds = card.getBoundingClientRect();
+      const previousX = parseFloat(getComputedStyle(button).translate) || 0;
+      const baseLeft = rect.left - previousX, baseRight = rect.right - previousX;
+      const desiredX = matchMedia('(max-width:540px)').matches ? 0 : [-205,240,-175][noAttempts-1];
+      const x = Math.min(Math.max(desiredX,bounds.left+18-baseLeft),bounds.right-18-baseRight);
+      const y = matchMedia('(max-width:540px)').matches ? [105,150,70][noAttempts-1] : [110,55,135][noAttempts-1];
+      button.style.translate = `${x}px ${y}px`;
+    }
+    function outcome(section) {
+      $('planner').hidden = true; section.classList.add('is-visible'); section.querySelector('h2').focus();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function celebrate() {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const box = $('confetti'), colors = ['#f0ca91','#a9c5dc','#fff7ec','#d2a3ac'];
+      for (let i=0;i<28;i++) { const piece=document.createElement('i'); piece.style.left=`${(i*37+11)%100}%`; piece.style.background=colors[i%colors.length]; piece.style.animationDelay=`${(i%7)*.09}s`; box.append(piece); }
+      setTimeout(()=>box.replaceChildren(),3500);
+    }
+    $('yesBtn').addEventListener('click', () => {
+      if (!hotel || !selectedAmenities.size) return;
+      $('yesSummary').textContent = `${hotel.name} in ${labels[area]}, with ${[...selectedAmenities].join(', ')} on the wishlist. We can pick the night together.`;
+      outcome($('yesOutcome')); celebrate();
+    });
+    $('noBtn').addEventListener('click', () => {
+      noAttempts++;
+      if (noAttempts===1) { $('status').textContent='Before you decide, have you seen the hotel options?'; $('noBtn').textContent='Yes. Still no.'; }
+      else if (noAttempts===2) { $('status').textContent='We could always pick a different pillow situation.'; $('noBtn').textContent='I remain unconvinced.'; }
+      else if (noAttempts===3) { $('status').textContent='Final offer: a very leisurely morning. Then I promise to respect your answer.'; $('noBtn').textContent='No thanks, really.'; }
+      else outcome($('noOutcome'));
+      if (noAttempts<4) { $('decisionButtons').classList.add('dodging'); moveNo(); }
+    });
+    document.querySelectorAll('[data-restart]').forEach(button => button.addEventListener('click', () => {
+      $('yesOutcome').classList.remove('is-visible'); $('noOutcome').classList.remove('is-visible'); $('planner').hidden = false;
+      area = ''; hotel = null; selectedAmenities = new Set();
+      areaButtons.forEach(choice => choice.setAttribute('aria-pressed','false')); $('areaContinue').disabled = true; $('hotelContinue').disabled = true; $('yesBtn').disabled = true;
+      $('yesNotice').textContent = 'Your plan stays here until you share it.'; $('noNotice').textContent = 'Your answer stays here until you share it.';
+      $('confetti').replaceChildren(); resetNo(); showStep('areaStep','areaTitle');
+    }));
+    async function copy(text, notice) {
+      try { await navigator.clipboard.writeText(text); notice.textContent = 'Copied! Send it when you’re ready.'; }
+      catch { notice.textContent = `Copy and send this: “${text}”`; }
+    }
+    $('copyYes').addEventListener('click', () => copy(
+      `A night away in ${labels[area]} sounds good! How about ${hotel.name}? I'd love ${[...selectedAmenities].join(', ')}. Let's pick a night. ${hotel.url}`,
+      $('yesNotice')));
+    $('copyNo').addEventListener('click', () => copy('Thanks for the hotel invitation, but I’ll pass this time.',$('noNotice')));
+  </script>
+</body>
+</html>
